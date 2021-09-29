@@ -2,6 +2,8 @@
 from chat_downloader import ChatDownloader
 import sys
 import math
+import urllib.request
+import re
 
 # 目前仅支持开启了chat的回放，看不懂chat-downloader的源代码，甚至不想把直播安排进todo
 
@@ -10,9 +12,13 @@ def sec2hms(sec):# 时间转换
         str(int((sec % 3600)//60)).zfill(2)+':'+str(round(sec % 60, 2))
     return hms
 
-url = 'youtu.be/'+sys.argv[1] 
+url = 'youtu.be/'+sys.argv[1]
+html = urllib.request.urlopen("https://www.youtube.com/watch?v="+sys.argv[1]).read().decode('utf-8')
+name = [] #预留加人用
+title = re.findall("<title>(.+?)</title>",html)[0].replace(' - YouTube','')
+name += re.findall('itemprop="name" content="(.+?)">',html)
 chat = ChatDownloader().get_chat(url,message_groups=['messages','superchat']) #默认普通评论和sc
-name = 'DIALOGUE Official Channel' #挑出来摆在上面的人，默认d+官号，自己改
+
 
 limitLineAmount = 12  # 屏上弹幕行数限制
 danmakuPassageway = []  # 塞弹幕用，记录每行上一条弹幕的消失时间
@@ -35,7 +41,7 @@ PlayResY: 720\n\
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, marginL, marginR, marginV, Encoding\n\
 Style: Default,微软雅黑,54,&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,0,2,0,0,0,0\n\
 Style: Alternate,微软雅黑,36,&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,0,2,0,0,0,0\n\
-Style: Office,'+fontName+','+str(OfficeSize)+',&H0FFFFFF,&H00FFFFFF,&H00000000,&H00000000,-1,0,0,0,100,100,2,0,1,1.5,0,2,0,0,10,0\n\
+Style: Office,'+fontName+','+str(OfficeSize)+',&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,-1,0,0,0,100,100,2,0,1,1.5,0,2,0,0,10,0\n\
 Style: Danmaku,'+fontName+','+str(fontSize)+',&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,-1,0,0,0,100,100,2,0,1,1.5,0,2,0,0,10,0\n\n\
 [Events]\n\
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n'
@@ -47,17 +53,27 @@ for message in chat:
         vpos = message['time_in_seconds']
         vpos_end = vpos+8 # 普通弹幕的时长，默认8秒
     else:
-        #vpos = 0
+        continue
+    if 'name' not in message['author'].keys():
         continue
     if 'money' in message.keys():
         text = '('+str(message['money']['amount'])+message['money']['currency']+')' # 打钱的标上数额
         if 'message' in message.keys():
-            text += message['message'] # 打钱有留言的加上
+            if message['message']:
+                text += message['message'] # 打钱有留言的加上
         vpos_end += 2 # 打钱的多给2秒
     else:
-        text=message['author']['name']+'： '+message['message'] if message['author']['name'] == name else message['message'] # 没打钱的直接记录弹幕，设置了的号加上账号名字
-
-    if message['author']['name'] == name: # 特定账号的弹幕放上面并加上背景
+        text=message['author']['name']+'： '+message['message'] if message['author']['name'] in name else message['message'] # 没打钱的直接记录弹幕，设置了的号加上账号名字
+    if 'emotes' in message.keys():
+        for i in message['emotes']:
+            if i['is_custom_emoji']:
+                text = text.replace(i['name'],'')
+            else:
+                text = text.replace(i['name'],i['id'])
+    if len(text) == 0:
+        continue
+    
+    if message['author']['name'] in name: # 特定账号的弹幕放上面并加上背景
         f.write('Dialogue: 4,'+sec2hms(vpos)+','+sec2hms(vpos_end)+',Office,,0,0,0,,{\\an5\\p1\\pos('+str(videoWidth/2)+','+str(math.floor(OfficeBgHeight/2))+')\\bord0\\1c&H000000&\\1a&H78&}'+'m 0 0 l '+str(videoWidth)+' 0 l '+str(videoWidth) + ' '+str(OfficeBgHeight)+' l 0 '+str(OfficeBgHeight)+'\n')
         f.write('Dialogue: 5,'+sec2hms(vpos)+','+sec2hms(vpos_end)+',Office,,0,0,0,,{\\an5\\pos('+str(videoWidth/2)+','+str(math.floor(OfficeBgHeight/2))+')\\bord0\\fsp0}'+text+'\n')
     else: # 其他人的弹幕放滚动
@@ -81,3 +97,4 @@ for message in chat:
         ey = fontSize*(passageway_index)
         f.write('Dialogue: 0,'+sec2hms(vpos)+','+ sec2hms(vpos_end) + ',Danmaku,'+message['author']['name'].replace(',','')+',0,0,0,,{\\an7\\move('+str(sx)+','+str(sy)+','+str(ex)+','+str(ey)+')}'+text+'\n')
 f.close()
+print(title+'的弹幕已经存为'+sys.argv[1]+'.ass')
