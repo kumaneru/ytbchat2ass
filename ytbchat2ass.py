@@ -93,7 +93,12 @@ for message in chat:
         # 计算弹幕位置
         sx = videoWidth
         sy = fontSize*(passageway_index)
-        ex = 0-len(text)*60
+        ex = 0
+        for i in text:
+            if re.search("[A-Za-z 0-9',.]",i):
+                ex = ex-30
+            else:
+                ex = ex-60
         ey = fontSize*(passageway_index)
         f.write('Dialogue: 0,'+sec2hms(vpos)+','+ sec2hms(vpos_end) + ',Danmaku,'+message['author']['name'].replace(',','')+',0,0,0,,{\\an7\\move('+str(sx)+','+str(sy)+','+str(ex)+','+str(ey)+')}'+text+'\n')
 f.close()
