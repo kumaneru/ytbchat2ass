@@ -12,6 +12,7 @@ def sec2hms(sec):# 时间转换
         str(int((sec % 3600)//60)).zfill(2)+':'+str(round(sec % 60, 2))
     return hms
 
+
 url = 'youtu.be/'+sys.argv[1]
 html = urllib.request.urlopen("https://www.youtube.com/watch?v="+sys.argv[1]).read().decode('utf-8')
 name = [] #预留加人用
@@ -19,7 +20,7 @@ title = re.findall("<title>(.+?)</title>",html)[0].replace(' - YouTube','')
 name += re.findall('itemprop="name" content="(.+?)">',html)
 chat = ChatDownloader().get_chat(url,message_groups=['messages','superchat']) #默认普通评论和sc
 
-
+count = 0
 limitLineAmount = 12  # 屏上弹幕行数限制
 danmakuPassageway = []  # 塞弹幕用，记录每行上一条弹幕的消失时间
 for i in range(limitLineAmount):
@@ -70,12 +71,15 @@ for message in chat:
                 text = text.replace(i['name'],'')
             else:
                 text = text.replace(i['name'],i['id'])
-    if len(text) == 0:
+    if text:
+        if len(text) == 0:
+            continue
+    else:
         continue
-    
     if message['author']['name'] in name: # 特定账号的弹幕放上面并加上背景
         f.write('Dialogue: 4,'+sec2hms(vpos)+','+sec2hms(vpos_end)+',Office,,0,0,0,,{\\an5\\p1\\pos('+str(videoWidth/2)+','+str(math.floor(OfficeBgHeight/2))+')\\bord0\\1c&H000000&\\1a&H78&}'+'m 0 0 l '+str(videoWidth)+' 0 l '+str(videoWidth) + ' '+str(OfficeBgHeight)+' l 0 '+str(OfficeBgHeight)+'\n')
         f.write('Dialogue: 5,'+sec2hms(vpos)+','+sec2hms(vpos_end)+',Office,,0,0,0,,{\\an5\\pos('+str(videoWidth/2)+','+str(math.floor(OfficeBgHeight/2))+')\\bord0\\fsp0}'+text+'\n')
+        count += 1
     else: # 其他人的弹幕放滚动
         vpos_next_min = float('inf')
         vpos_next = vpos+1280/(len(text)*60+1280) * 8
@@ -101,5 +105,7 @@ for message in chat:
                 ex = ex-60
         ey = fontSize*(passageway_index)
         f.write('Dialogue: 0,'+sec2hms(vpos)+','+ sec2hms(vpos_end) + ',Danmaku,'+message['author']['name'].replace(',','')+',0,0,0,,{\\an7\\move('+str(sx)+','+str(sy)+','+str(ex)+','+str(ey)+')}'+text+'\n')
+        count += 1
+
 f.close()
-print(title+'的弹幕已经存为'+sys.argv[1]+'.ass')
+print(title+'的弹幕已经存为'+sys.argv[1]+'.ass,共'+str(count)+'条')
