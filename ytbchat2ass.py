@@ -52,7 +52,7 @@ Comment: 0,00:00:00.0,00:00:00.0,Danmaku,标题,0,0,0,,'+title+'\n'
     f = open(code+'.ass', 'w', encoding='utf-8-sig')
     f.write(head)
     for message in chat:
-        vpos = message['time_in_seconds'] - int(delay)
+        vpos = message['time_in_seconds'] - float(delay)
         if vpos > 0:
             vpos_end = vpos+8  # 普通弹幕的时长，默认8秒
         else:
