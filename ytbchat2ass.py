@@ -67,7 +67,7 @@ Comment: 0,00:00:00.0,00:00:00.0,Danmaku,标题,0,0,0,,'+title+'\n'
             vpos_end += 2  # 打钱的多给2秒
         else:
             # 没打钱的直接记录弹幕，设置了的号加上账号名字
-            text = message['author']['name']+'： ' + message['message'] if message['author']['name'] in name else message['message']
+            text = message['author']['name']+'： ' + message['message'] if message['author']['name'] in names else message['message']
         if 'emotes' in message.keys():
             for i in message['emotes']:
                 if i['is_custom_emoji']:
@@ -79,7 +79,7 @@ Comment: 0,00:00:00.0,00:00:00.0,Danmaku,标题,0,0,0,,'+title+'\n'
                 continue
         else:
             continue
-        if message['author']['name'] in name:  # 特定账号的弹幕放上面并加上背景
+        if message['author']['name'] in names:  # 特定账号的弹幕放上面并加上背景
             f.write('Dialogue: 4,'+sec2hms(vpos)+','+sec2hms(vpos_end)+',Office,,0,0,0,,{\\an5\\p1\\pos('+str(videoWidth/2)+','+str(math.floor(OfficeBgHeight/2))+')\\bord0\\1c&H000000&\\1a&H78&}'+'m 0 0 l '+str(videoWidth)+' 0 l '+str(videoWidth) + ' '+str(OfficeBgHeight)+' l 0 '+str(OfficeBgHeight)+'\n')
             f.write('Dialogue: 5,'+sec2hms(vpos)+','+sec2hms(vpos_end)+',Office,,0,0,0,,{\\an5\\pos('+str(videoWidth/2)+','+str(math.floor(OfficeBgHeight/2))+')\\bord0\\fsp0}'+text+'\n')
             count += 1
