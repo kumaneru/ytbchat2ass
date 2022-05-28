@@ -19,7 +19,7 @@ def chat2ass(code, name, delay):
     html = urllib.request.urlopen(url).read().decode('utf-8')
     names = [name]
     title = re.findall("<title>(.+?)</title>", html)[0].replace(' - YouTube', '')
-    names += re.findall('itemprop="name" content="(.+?)">', html)
+    names += re.findall('link itemprop="name" content="(.+?)">', html)
     chat = ChatDownloader().get_chat(url, message_groups=['messages', 'superchat'])  # 默认普通评论和sc
     count = 0
     limitLineAmount = 12  # 屏上弹幕行数限制
