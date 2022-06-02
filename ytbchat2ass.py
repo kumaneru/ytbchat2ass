@@ -122,6 +122,11 @@ def main():
     parser.add_argument('code', metavar='str', help='该视频的编号，如youtu.be/tWXPP1tvuIU或www.youtube.com/watch?v=tWXPP1tvuIU中的tWXPP1tvuIU')
     args = parser.parse_args()
     if args.code:
+        args.code = args.code.replace('+', '')
+        if 'youtu.be' in args.code:
+            args.code = args.code.split('/')[-1]
+        if 'youtube.com' in args.code:
+            args.code = re.search(r'v=([0-9A-Za-z_-]+)', args.code)[1]
         if not args.name:
             args.name = ''
         if not args.delay:
