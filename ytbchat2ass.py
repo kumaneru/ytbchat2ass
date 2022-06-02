@@ -110,7 +110,7 @@ Comment: 0,00:00:00.0,00:00:00.0,Danmaku,标题,0,0,0,,'+title+'\n'
             f.write('Dialogue: 0,'+sec2hms(vpos)+',' + sec2hms(vpos_end) + ',Danmaku,'+message['author']['name'].replace(',', '')+',0,0,0,,{\\an7\\move('+str(sx)+','+str(sy)+','+str(ex)+','+str(ey)+')}'+text+'\n')
             count += 1
     f.close()
-    print(title+'的弹幕已经存为'+sys.argv[1]+'.ass,共'+str(count)+'条')
+    print(title+'的弹幕已经存为'+code+'.ass,共'+str(count)+'条')
 
 
 def main():
