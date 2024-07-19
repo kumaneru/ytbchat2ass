@@ -14,7 +14,7 @@ def sec2hms(sec):  # 时间转换
     return hms
 
 def chat2ass(link, name, delay):
-    pattern = re.compile(r"(.*?)youtube\.com/(?:v/|live/|watch\?(?:.*&)?v=)(?P<video_id>[\w-]{11})")
+    pattern = re.compile(r"(?:.*?)youtube\.com/(?:v/|live/|watch\?(?:.*&)?v=)(?P<video_id>[\w-]{11})")
     vid_match = pattern.split(link)
     vid = [x for x in vid_match if x][0]
     url = f"https://www.youtube.com/watch?v={vid}"
