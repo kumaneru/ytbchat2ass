@@ -13,7 +13,7 @@ def sec2hms(sec):  # 时间转换
     hms = str(int(sec//3600)).zfill(2)+':' + str(int((sec % 3600)//60)).zfill(2)+':'+str(round(sec % 60, 2))
     return hms
 
-def chat2ass(link, name, delay):
+def chat2ass(link, name, delay, cookies):
     pattern = re.compile(r"(?:.*?)youtube\.com/(?:v/|live/|watch\?(?:.*&)?v=)(?P<video_id>[\w-]{11})")
     vid_match = pattern.split(link)
     vid = [x for x in vid_match if x][0]
@@ -22,7 +22,7 @@ def chat2ass(link, name, delay):
     names = [name]
     title = re.findall("<title>(.+?)</title>", html)[0].replace(' - YouTube', '')
     names += re.findall('link itemprop="name" content="(.+?)">', html)
-    chat = ChatDownloader().get_chat(url, message_groups=['messages', 'superchat'])  # 默认普通评论和sc
+    chat = ChatDownloader(cookies=cookies).get_chat(url, message_groups=['messages', 'superchat'])  # 默认普通评论和sc
     count = 0
     limitLineAmount = 12  # 屏上弹幕行数限制
     danmakuPassageway = []  # 塞弹幕用，记录每行上一条弹幕的消失时间
@@ -123,6 +123,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-n', '--name', metavar='str', help='除主播外，需将弹幕显示在上方的账号')
     parser.add_argument('-d', '--delay', metavar='str', help='弹幕延迟，一般适用于首播')
+    parser.add_argument('-c', '--cookie', metavar='str', help='cookie文件的地址')
     parser.add_argument('link', metavar='str', help='视频链接或视频id')
     args = parser.parse_args()
     if args.link:
@@ -130,7 +131,9 @@ def main():
             args.name = ''
         if not args.delay:
             args.delay = 0
-        chat2ass(args.link, args.name, args.delay)
+        if not args.cookie:
+            args.cookie = None
+        chat2ass(args.link, args.name, args.delay , args.cookie)
 
 
 if __name__ == '__main__':
