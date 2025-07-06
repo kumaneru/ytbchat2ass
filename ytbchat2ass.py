@@ -19,7 +19,9 @@ def chat2ass(link, name, delay, cookies):
     vid = [x for x in vid_match if x][0]
     url = f"https://www.youtube.com/watch?v={vid}"
     html = urllib.request.urlopen(url).read().decode('utf-8')
-    names = [name]
+    names = []
+    if name:
+        names += name
     title = re.findall("<title>(.+?)</title>", html)[0].replace(' - YouTube', '')
     names += re.findall('link itemprop="name" content="(.+?)">', html)
     chat = ChatDownloader(cookies=cookies).get_chat(url, message_groups=['messages', 'superchat'])  # 默认普通评论和sc
@@ -79,7 +81,7 @@ def chat2ass(link, name, delay, cookies):
                 else:
                     text = text.replace(i['name'], i['id'])
         if text:
-            if len(text) == 0:
+            if len(text) == 0 or len(text) > 100:
                 continue
         else:
             continue
@@ -126,14 +128,7 @@ def main():
     parser.add_argument('-c', '--cookie', metavar='str', help='cookie文件的地址')
     parser.add_argument('link', metavar='str', help='视频链接或视频id')
     args = parser.parse_args()
-    if args.link:
-        if not args.name:
-            args.name = ''
-        if not args.delay:
-            args.delay = 0
-        if not args.cookie:
-            args.cookie = None
-        chat2ass(args.link, args.name, args.delay , args.cookie)
+    chat2ass(args.link, args.name or None, args.delay or 0, args.cookie or None)
 
 
 if __name__ == '__main__':
