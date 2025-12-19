@@ -21,7 +21,7 @@ def chat2ass(link, name, delay, cookies):
     html = urllib.request.urlopen(url).read().decode('utf-8')
     names = []
     if name:
-        names += name
+        names += name.split(',')
     title = re.findall("<title>(.+?)</title>", html)[0].replace(' - YouTube', '')
     names += re.findall('link itemprop="name" content="(.+?)">', html)
     chat = ChatDownloader(cookies=cookies).get_chat(url, message_groups=['messages', 'superchat'])  # 默认普通评论和sc
@@ -85,7 +85,15 @@ def chat2ass(link, name, delay, cookies):
                 continue
         else:
             continue
-        if message['author']['name'] in names:  # 特定账号的弹幕放上面并加上背景
+        currunt_name = message['author']['name'][1:]
+        if 'badges' in message['author'].keys():
+            if message['author']['badges'][0]['title'] == 'Owner':
+                owner_check = True
+            else:
+                owner_check = False
+        else:
+            owner_check = False
+        if currunt_name in names or owner_check: # 特定账号的弹幕放上面并加上背景
             f.write('Dialogue: 4,'+sec2hms(vpos)+','+sec2hms(vpos_end)+',Office,,0,0,0,,{\\an5\\p1\\pos('+str(videoWidth/2)+','+str(math.floor(OfficeBgHeight/2))+')\\bord0\\1c&H000000&\\1a&H78&}'+'m 0 0 l '+str(videoWidth)+' 0 l '+str(videoWidth) + ' '+str(OfficeBgHeight)+' l 0 '+str(OfficeBgHeight)+'\n')
             f.write('Dialogue: 5,'+sec2hms(vpos)+','+sec2hms(vpos_end)+',Office,,0,0,0,,{\\an5\\pos('+str(videoWidth/2)+','+str(math.floor(OfficeBgHeight/2))+')\\bord0\\fsp0}'+text+'\n')
             count += 1
